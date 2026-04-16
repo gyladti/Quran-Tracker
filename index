@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quran Tracker — следи за своим чтением Корана</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #F0D89A;
+      --gold-dark: #8B6914;
+      --green: #1A3A2A;
+      --green-mid: #2D5A3D;
+      --green-light: #4A8C5C;
+      --cream: #FAF6EF;
+      --cream-dark: #EDE4D0;
+      --text: #1A1A18;
+      --text-muted: #5A5A50;
+      --white: #FFFFFF;
+      --radius: 16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(250, 246, 239, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(201,168,76,0.2);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Amiri', serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--green);
+      text-decoration: none;
+    }
+
+    .nav-logo .icon {
+      width: 32px;
+      height: 32px;
+      background: var(--green);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-cta {
+      background: var(--green);
+      color: var(--gold-light);
+      border: none;
+      border-radius: 50px;
+      padding: 0.55rem 1.5rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .nav-cta:hover { background: var(--green-mid); transform: translateY(-1px); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 7rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .arabic-decoration {
+      font-family: 'Amiri', serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      color: rgba(201, 168, 76, 0.25);
+      position: absolute;
+      top: 10%;
+      right: 5%;
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .arabic-decoration2 {
+      font-family: 'Amiri', serif;
+      font-size: clamp(2rem, 5vw, 4rem);
+      color: rgba(201, 168, 76, 0.15);
+      position: absolute;
+      bottom: 15%;
+      left: 3%;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(201,168,76,0.15);
+      border: 1px solid rgba(201,168,76,0.4);
+      color: var(--gold-dark);
+      border-radius: 50px;
+      padding: 0.35rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.02em;
+    }
+
+    .badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      flex-shrink: 0;
+    }
+
+    h1 {
+      font-family: 'Amiri', serif;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 700;
+      line-height: 1.15;
+      color: var(--green);
+      max-width: 720px;
+      margin-bottom: 1.25rem;
+    }
+
+    h1 span {
+      color: var(--gold);
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.15rem);
+      color: var(--text-muted);
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      background: var(--green);
+      color: var(--gold-light);
+      border: none;
+      border-radius: 50px;
+      padding: 0.85rem 2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover { background: var(--green-mid); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,58,42,0.25); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--green);
+      border: 1.5px solid rgba(26,58,42,0.3);
+      border-radius: 50px;
+      padding: 0.85rem 2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover { border-color: var(--green); background: rgba(26,58,42,0.05); }
+
+    /* STATS */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+      margin-top: 4rem;
+      padding-top: 3rem;
+      border-top: 1px solid rgba(201,168,76,0.2);
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: 'Amiri', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .stat-label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* SECTION */
+    section {
+      padding: 5rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold-dark);
+      margin-bottom: 0.75rem;
+    }
+
+    h2 {
+      font-family: 'Amiri', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      color: var(--green);
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+
+    .section-sub {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 3rem;
+    }
+
+    /* FEATURES */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--white);
+      border: 1px solid var(--cream-dark);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(26,58,42,0.1);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(26,58,42,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .feature-icon svg { width: 24px; height: 24px; color: var(--green); }
+
+    .feature-card h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-card p {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    /* MOCKUP / APP PREVIEW */
+    .preview-section {
+      background: var(--green);
+      border-radius: 32px;
+      padding: 4rem 2rem;
+      margin: 2rem auto;
+      max-width: 1100px;
+      display: flex;
+      align-items: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .preview-text { flex: 1; min-width: 260px; }
+
+    .preview-text h2 { color: var(--gold-light); }
+    .preview-text .section-label { color: var(--gold); opacity: 0.8; }
+    .preview-text p { color: rgba(240,216,154,0.7); line-height: 1.7; font-size: 1rem; }
+
+    .checklist {
+      list-style: none;
+      margin-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .checklist li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+      color: rgba(240,216,154,0.85);
+    }
+
+    .check-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(201,168,76,0.25);
+      border: 1px solid rgba(201,168,76,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .check-icon::after {
+      content: '';
+      width: 8px;
+      height: 5px;
+      border-left: 1.5px solid var(--gold-light);
+      border-bottom: 1.5px solid var(--gold-light);
+      transform: rotate(-45deg) translateY(-1px);
+    }
+
+    .phone-frame {
+      flex: 1;
+      min-width: 240px;
+      max-width: 300px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 36px;
+      padding: 12px;
+      border: 1.5px solid rgba(201,168,76,0.3);
+      margin: 0 auto;
+    }
+
+    .phone-screen {
+      background: var(--cream);
+      border-radius: 26px;
+      padding: 1.25rem 1rem;
+      min-height: 420px;
+    }
+
+    .phone-header {
+      font-family: 'Amiri', serif;
+      font-size: 1.1rem;
+      color: var(--green);
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--cream-dark);
+    }
+
+    .surah-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.6rem 0.5rem;
+      border-radius: 10px;
+      margin-bottom: 4px;
+    }
+
+    .surah-item:hover { background: var(--cream-dark); }
+
+    .surah-num {
+      width: 28px;
+      height: 28px;
+      background: rgba(26,58,42,0.08);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--green);
+      flex-shrink: 0;
+    }
+
+    .surah-info { flex: 1; }
+    .surah-name { font-size: 0.82rem; font-weight: 500; color: var(--text); }
+    .surah-sub { font-size: 0.7rem; color: var(--text-muted); }
+
+    .surah-done {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--green-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .surah-done::after {
+      content: '';
+      width: 7px;
+      height: 4px;
+      border-left: 1.5px solid #fff;
+      border-bottom: 1.5px solid #fff;
+      transform: rotate(-45deg) translateY(-1px);
+    }
+
+    .progress-bar-wrap {
+      background: var(--cream-dark);
+      border-radius: 50px;
+      height: 6px;
+      width: 60px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--green-light);
+      border-radius: 50px;
+    }
+
+    /* HOW IT WORKS */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      counter-reset: step;
+    }
+
+    .step {
+      position: relative;
+      padding-top: 1rem;
+    }
+
+    .step-num {
+      font-family: 'Amiri', serif;
+      font-size: 3rem;
+      font-weight: 700;
+      color: rgba(201,168,76,0.2);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .step h3 { font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
+    .step p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* DOWNLOAD */
+    .download-section {
+      background: linear-gradient(135deg, var(--cream-dark) 0%, var(--cream) 100%);
+      border: 1px solid rgba(201,168,76,0.25);
+      border-radius: 32px;
+      padding: 4rem 2rem;
+      text-align: center;
+      margin: 2rem auto;
+      max-width: 1100px;
+    }
+
+    .store-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+
+    .store-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--green);
+      color: var(--cream);
+      border-radius: 14px;
+      padding: 0.85rem 1.5rem;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .store-btn:hover { background: var(--green-mid); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,58,42,0.25); }
+
+    .store-btn svg { width: 28px; height: 28px; fill: var(--cream); }
+
+    .store-btn-text { text-align: left; }
+    .store-btn-small { font-size: 0.7rem; opacity: 0.7; }
+    .store-btn-name { font-size: 0.95rem; font-weight: 600; }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--cream-dark);
+    }
+
+    footer a { color: var(--green); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      .preview-section { padding: 3rem 1.5rem; }
+      .stats { gap: 2rem; }
+      nav { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+        <path d="M12 2C6.5 2 3 6 3 12s3.5 10 9 10 9-4 9-10S17.5 2 12 2z" fill="#C9A84C"/>
+        <path d="M8 9h8M8 12h8M8 15h5" stroke="#1A3A2A" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    Quran Tracker
+  </a>
+  <a href="#download" class="nav-cta">Скачать бесплатно</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="arabic-decoration">بِسْمِ اللّٰه</div>
+  <div class="arabic-decoration2">الْقُرْآن</div>
+
+  <div class="badge">Читай. Отмечай. Расти.</div>
+
+  <h1>Твой личный трекер<br>чтения <span>Корана</span></h1>
+
+  <p class="hero-sub">
+    Отмечай прочитанные суры, следи за прогрессом и завершай Коран осознанно — день за днём.
+  </p>
+
+  <div class="hero-buttons">
+    <a href="#download" class="btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" width="18" height="18" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      Скачать приложение
+    </a>
+    <a href="#features" class="btn-secondary">Узнать больше</a>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">114</div>
+      <div class="stat-label">Сур в Коране</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">30</div>
+      <div class="stat-label">Джузов</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">∞</div>
+      <div class="stat-label">Награды</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-label">Возможности</div>
+  <h2>Всё, что нужно для регулярного чтения</h2>
+  <p class="section-sub">Простой и понятный инструмент без лишнего — только то, что помогает не потерять место.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+        </svg>
+      </div>
+      <h3>Отметка прочитанных сур</h3>
+      <p>Нажми одну кнопку — и сура помечена. Никаких регистраций и сложных настроек.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+        </svg>
+      </div>
+      <h3>Ежедневный прогресс</h3>
+      <p>Видишь, сколько ты прочитал за день, неделю и с начала. Мотивирует продолжать.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M12 20V10M18 20V4M6 20v-4"/>
+        </svg>
+      </div>
+      <h3>Статистика и серии</h3>
+      <p>Следи за своими рекордами и не прерывай цепочку ежедневного чтения.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/>
+        </svg>
+      </div>
+      <h3>Напоминания</h3>
+      <p>Настрой удобное время — приложение мягко напомнит, если ты ещё не читал сегодня.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+        </svg>
+      </div>
+      <h3>Все 114 сур и 30 джузов</h3>
+      <p>Полный список с арабскими и русскими названиями, количеством аятов и местом откровения.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <h3>Без рекламы и бесплатно</h3>
+      <p>Приложение полностью бесплатное. Никаких подписок, покупок и отвлекающей рекламы.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PREVIEW -->
+<div class="preview-section">
+  <div class="preview-text">
+    <div class="section-label">Удобный интерфейс</div>
+    <h2>Просто открой и читай</h2>
+    <p>Никакого обучения. Открываешь — видишь список сур. Читаешь — отмечаешь галочкой. Всё.</p>
+    <ul class="checklist">
+      <li><span class="check-icon"></span>Список всех сур с прогрессом</li>
+      <li><span class="check-icon"></span>Поиск по названию суры</li>
+      <li><span class="check-icon"></span>Тёмная тема для чтения ночью</li>
+      <li><span class="check-icon"></span>Работает офлайн</li>
+    </ul>
+  </div>
+
+  <div class="phone-frame">
+    <div class="phone-screen">
+      <div class="phone-header">Quran Tracker</div>
+
+      <div class="surah-item">
+        <div class="surah-num">1</div>
+        <div class="surah-info">
+          <div class="surah-name">Аль-Фатиха</div>
+          <div class="surah-sub">7 аятов · Мекка</div>
+        </div>
+        <div class="surah-done"></div>
+      </div>
+
+      <div class="surah-item">
+        <div class="surah-num">2</div>
+        <div class="surah-info">
+          <div class="surah-name">Аль-Бакара</div>
+          <div class="surah-sub">286 аятов · Медина</div>
+        </div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width: 60%"></div></div>
+      </div>
+
+      <div class="surah-item">
+        <div class="surah-num">3</div>
+        <div class="surah-info">
+          <div class="surah-name">Аль-Имран</div>
+          <div class="surah-sub">200 аятов · Медина</div>
+        </div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width: 20%"></div></div>
+      </div>
+
+      <div class="surah-item" style="opacity:0.4">
+        <div class="surah-num">4</div>
+        <div class="surah-info">
+          <div class="surah-name">Ан-Ниса</div>
+          <div class="surah-sub">176 аятов · Медина</div>
+        </div>
+      </div>
+
+      <div class="surah-item" style="opacity:0.4">
+        <div class="surah-num">5</div>
+        <div class="surah-info">
+          <div class="surah-name">Аль-Маида</div>
+          <div class="surah-sub">120 аятов · Медина</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #EDE4D0;">
+        <div style="font-size: 0.7rem; color: #5A5A50; margin-bottom: 4px;">Общий прогресс</div>
+        <div style="display:flex; align-items:center; gap: 8px;">
+          <div style="flex:1; background: #EDE4D0; border-radius: 50px; height: 8px; overflow:hidden;">
+            <div style="width: 18%; height:100%; background: #4A8C5C; border-radius: 50px;"></div>
+          </div>
+          <div style="font-size: 0.75rem; font-weight: 600; color: #1A3A2A;">18%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-label">Как это работает</div>
+  <h2>Три шага до регулярного чтения</h2>
+  <p class="section-sub">Начать проще, чем кажется.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Скачай приложение</h3>
+      <p>Доступно для iOS и Android. Установка занимает меньше минуты.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>Выбери суру</h3>
+      <p>Найди суру, которую читал, и отметь её как прочитанную — один тап.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Читай каждый день</h3>
+      <p>Следи за своим прогрессом и постепенно завершай весь Коран.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<div class="download-section" id="download">
+  <div class="section-label" style="text-align:center">Скачать</div>
+  <h2 style="text-align:center">Начни прямо сейчас</h2>
+  <p style="color: var(--text-muted); max-width: 400px; margin: 0.5rem auto 0; line-height:1.7;">
+    Бесплатно. Без рекламы. Работает офлайн. Доступно на iOS и Android.
+  </p>
+
+  <div class="store-buttons">
+    <a href="#" class="store-btn">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+      </svg>
+      <div class="store-btn-text">
+        <div class="store-btn-small">Скачать в</div>
+        <div class="store-btn-name">App Store</div>
+      </div>
+    </a>
+
+    <a href="#" class="store-btn">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3.18 23.76c.3.17.64.22.99.14l12.12-6.99-2.54-2.54-10.57 9.39zm16.04-9.2L16.44 13l2.78-2.78 2.78 1.6c.79.46.79 1.68 0 2.14l-2.78 1.6zM2.07 1.54C1.72 1.73 1.5 2.1 1.5 2.54v18.92c0 .44.22.81.57 1l11.46-10.42L2.07 1.54zm12.56 6.19L3.18.24c-.35-.08-.69-.03-.99.14l10.44 9.89 2-2.54z"/>
+      </svg>
+      <div class="store-btn-text">
+        <div class="store-btn-small">Скачать в</div>
+        <div class="store-btn-name">Google Play</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 Quran Tracker · <a href="#">Политика конфиденциальности</a> · <a href="#">Поддержка</a></p>
+  <p style="margin-top:6px; font-size:0.78rem; opacity:0.6">Сделано с уважением к Корану</p>
+</footer>
+
+</body>
+</html>
